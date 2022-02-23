@@ -2,11 +2,13 @@ export const mapService = {
   initMap,
   addMarker,
   panTo,
+  mapDBClicked,
 }
 
 var gMap
+var gLocs = {}
 
-function initMap(lat = 32.0749831, lng = 34.9120554) {
+function initMap(onDoubleClick, lat = 32.0749831, lng = 34.9120554) {
   console.log('InitMap')
   return _connectGoogleApi().then(() => {
     console.log('google available')
@@ -14,22 +16,37 @@ function initMap(lat = 32.0749831, lng = 34.9120554) {
       center: { lat, lng },
       zoom: 15,
     })
-    gMap.addListener('dblclick', handleMapClick)
     gMap.setOptions({
       disableDoubleClickZoom: true,
     })
-
+    gMap.addListener('dblclick', onDoubleClick)
     console.log('Map!', gMap)
   })
 }
-function mapDBClicked({ lat, lng }) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=AIzaSyDQZpmcKBeBErXtuej4ntQ7PKcNPRsBeiY`
-  addMarker(loc)
-  return axios(url).then(_prepareData)
+
+function getMap() {
+  return gMap
 }
 
-function _prepareData({ PLUS_CODE }) {
-  console.log('PLUS_CODE', PLUS_CODE)
+function mapDBClicked(e) {
+  const loc = e.latLng
+  const lat = loc.lat()
+  const lng = loc.lng()
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=`
+  let currLoc = { lat, lng, createdAt: Date.now() }
+  addMarker(loc)
+  console.log('url', url)
+  return axios(url)
+    .then((res) => res.data)
+    .then(_prepareData)
+    .then((locationName) => (currLoc.name = locationName))
+}
+
+function _prepareData({ plus_code }) {
+  var locationName = plus_code.compound_code.split(' ')
+  locationName.shift()
+  locationName = locationName.join(' ')
+  console.log('locationName', locationName)
 }
 
 function addMarker(loc) {
