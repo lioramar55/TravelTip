@@ -1,0 +1,10 @@
+main {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+#map {
+  flex-basis: 60%;
+}
