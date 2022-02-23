@@ -22,13 +22,14 @@ function initMap(lat = 32.0749831, lng = 34.9120554) {
     console.log('Map!', gMap)
   })
 }
-
-function handleMapClick(e) {
-  const { latLng } = e
-  const loc = { lat: latLng.lat(), lng: latLng.lng(), createdAt: Date.now() }
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${loc.lat},${loc.lng}&sensor=true&key=AIzaSyDQZpmcKBeBErXtuej4ntQ7PKcNPRsBeiY`
-
+function mapDBClicked({ lat, lng }) {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=AIzaSyDQZpmcKBeBErXtuej4ntQ7PKcNPRsBeiY`
   addMarker(loc)
+  return axios(url).then(_prepareData)
+}
+
+function _prepareData({ PLUS_CODE }) {
+  console.log('PLUS_CODE', PLUS_CODE)
 }
 
 function addMarker(loc) {

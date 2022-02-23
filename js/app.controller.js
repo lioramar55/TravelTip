@@ -24,6 +24,12 @@ function getPosition() {
   })
 }
 
+function handleMapClick(e) {
+  const { latLng } = e
+  const loc = { lat: latLng.lat(), lng: latLng.lng(), createdAt: Date.now() }
+  mapService.mapDBClicked(loc).then()
+}
+
 function onAddMarker() {
   console.log('Adding a marker')
   //   mapService.addMarker({ lat: 32.0749831, lng: 34.9120554 })
