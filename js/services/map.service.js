@@ -6,19 +6,19 @@ export const mapService = {
   removeMarker,
   geocode,
   getNameFromCoords,
+  getCurrLocation,
 }
 
 var gMap
 var gMarkers = []
 var geocoder
+var gCurrLoc
 
 function initMap(onDoubleClick, lat = 32.0749831, lng = 34.9120554) {
-  console.log('InitMap')
   return _connectGoogleApi().then(() => {
-    console.log('google available')
     gMap = new google.maps.Map(document.querySelector('#map'), {
       center: { lat, lng },
-      zoom: 15,
+      zoom: 8,
     })
     gMap.setOptions({
       disableDoubleClickZoom: true,
@@ -33,20 +33,24 @@ function mapDBClicked(e, saveLoc, renderCurrLoc) {
   const loc = e.latLng
   const lat = loc.lat()
   const lng = loc.lng()
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=`
-  let currLoc = { lat, lng, createdAt: Date.now(), id: _getId(4) }
-  addMarker(loc, currLoc.id)
+  gCurrLoc = { lat, lng, createdAt: Date.now(), id: _getId(4) }
+
+  addMarker(loc, gCurrLoc.id)
   return getNameFromCoords({ lat, lng })
     .then((locationName) => {
-      currLoc.name = locationName
-      saveLoc(currLoc)
-      return Promise.resolve(currLoc.name)
+      gCurrLoc.name = locationName
+      saveLoc(gCurrLoc)
+      return Promise.resolve(gCurrLoc.name)
     })
     .then(renderCurrLoc)
 }
 
+function getCurrLocation() {
+  return gCurrLoc
+}
+
 function getNameFromCoords({ lat, lng }) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=`
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=AIzaSyDQZpmcKBeBErXtuej4ntQ7PKcNPRsBeiY`
   return axios(url)
     .then((res) => res.data)
     .then(_prepareData)
@@ -57,6 +61,7 @@ function addMarker(loc, id) {
     position: loc,
     map: gMap,
     title: 'Hello World!',
+    icon: 'assets/icon.png',
   })
   gMarkers.push({ marker, id })
   return marker

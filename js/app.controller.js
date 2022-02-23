@@ -1,6 +1,7 @@
 import { locService } from './services/loc.service.js'
 import { mapService } from './services/map.service.js'
 import { storageService } from './services/storage.service.js'
+import { weatherService } from './services/weather.service.js'
 
 window.onload = onInit
 window.onAddMarker = onAddMarker
@@ -14,17 +15,33 @@ window.saveToStorage = storageService.saveToStorage
 window.loadFromStorage = storageService.loadFromStorage
 
 function onInit() {
-  mapService
-    .initMap(onDoubleClick)
-    .then(() => {
-      console.log('Map is ready')
-      renderTable()
-    })
-    .catch(() => console.log('Errorr: cannot init map'))
+  let params = new URL(document.location).searchParams
+  let lat = parseFloat(params.get('lat'))
+  let lng = parseFloat(params.get('lng'))
+  if (lat && lng) {
+    mapService
+      .initMap(onDoubleClick, lat, lng)
+      .then(() => {
+        console.log('Map is ready')
+        renderTable()
+      })
+      .catch(() => console.log('Errorr: cannot init map'))
+  } else {
+    mapService
+      .initMap(onDoubleClick)
+      .then(() => {
+        console.log('Map is ready')
+        renderTable()
+      })
+      .catch(() => console.log('Errorr: cannot init map'))
+  }
 }
 
 function onDoubleClick(e) {
-  mapService.mapDBClicked(e, locService.saveLoc, renderCurrLoc).then(renderTable)
+  mapService
+    .mapDBClicked(e, locService.saveLoc, renderCurrLoc)
+    .then(renderTable)
+    .then(renderWeather)
 }
 
 // This function provides a Promise API to the callback-based-api of getCurrentPosition
@@ -33,6 +50,11 @@ function getPosition() {
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(resolve, reject)
   })
+}
+
+function renderWeather() {
+  var { lat, lng } = mapService.getCurrLocation()
+  if (lat && lng) weatherService.getLocWeather({ lat, lng })
 }
 
 function renderTable() {
@@ -58,8 +80,9 @@ function renderTable() {
 }
 
 function onCopyLoc() {
-  var currLoc = document.querySelector('.curr-loc-name span').innerText
-  window.navigator.clipboard.writeText(currLoc)
+  // var currLoc = document.querySelector('.curr-loc-name span').innerText
+  var url = window.location.href + '?lat=45.6626&lng=72.4524'
+  window.navigator.clipboard.writeText(url)
 }
 
 function renderCurrLoc(name) {
