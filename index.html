@@ -11,13 +11,13 @@
       <h1>TravelTip</h1>
       <nav>
         <input type="search" name="search" placeholder="Enter Location" />
-        <button class="search-loc-btn">GO</button>
-        <button class="my-location-btn">My Location</button>
+        <button onclick="onGoToLoc()" class="search-loc-btn">GO</button>
+        <button onclick="onGetUserPos()" class="my-location-btn">My Location</button>
       </nav>
     </header>
     <section class="curr-loc">
       <h2 class="curr-loc-name">Location: <span>Central Park, New York</span></h2>
-      <button class="copy-loc-btn">Copy Location</button>
+      <button onclick="onCopyLoc()">Copy Location</button>
     </section>
     <main>
       <aside>

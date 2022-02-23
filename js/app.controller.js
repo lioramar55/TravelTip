@@ -5,8 +5,11 @@ import { storageService } from './services/storage.service.js'
 window.onload = onInit
 window.onAddMarker = onAddMarker
 window.onPanTo = onPanTo
+window.onDeleteLoc = onDeleteLoc
 window.onGetLocs = onGetLocs
 window.onGetUserPos = onGetUserPos
+window.onCopyLoc = onCopyLoc
+window.onGoToLoc = onGoToLoc
 window.saveToStorage = storageService.saveToStorage
 window.loadFromStorage = storageService.loadFromStorage
 
@@ -21,7 +24,7 @@ function onInit() {
 }
 
 function onDoubleClick(e) {
-  mapService.mapDBClicked(e, locService.saveLoc).then(renderTable)
+  mapService.mapDBClicked(e, locService.saveLoc, renderCurrLoc).then(renderTable)
 }
 
 // This function provides a Promise API to the callback-based-api of getCurrentPosition
@@ -46,12 +49,23 @@ function renderTable() {
         <td>${loc.createdAt}</td>
         <td>
           <button onclick="onPanTo('${loc.lat}', '${loc.lng}')" class="btn">Go</button>
-          <button onclick="onDeleteLoc('${loc.lat}', '${loc.lng}')" class="btn">Delete</button>
+          <button onclick="onDeleteLoc('${loc.id}')" class="btn">Delete</button>
       </tr>`
       )
     )
 
     .then((strHTML) => (document.querySelector('.location-table').innerHTML = strHTML.join('')))
+}
+
+function onCopyLoc() {
+  var currLoc = document.querySelector('.curr-loc-name span').innerText
+  window.navigator.clipboard.writeText(currLoc)
+}
+
+function renderCurrLoc(name) {
+  if (Object.keys(name).length === 1)
+    document.querySelector('.curr-loc-name span').innerText = name[0].formatted_address
+  else document.querySelector('.curr-loc-name span').innerText = name
 }
 
 function onAddMarker() {
@@ -69,22 +83,33 @@ function onGetLocs() {
 function onGetUserPos() {
   getPosition()
     .then((pos) => {
-      console.log('User position is:', pos.coords)
+      var lat = pos.coords.latitude
+      var lng = pos.coords.longitude
+      mapService.panTo(lat, lng)
       document.querySelector(
         '.user-pos'
       ).innerText = `Latitude: ${pos.coords.latitude} - Longitude: ${pos.coords.longitude}`
+      return Promise.resolve({ lat, lng })
     })
+    .then(mapService.getNameFromCoords)
+    .then(renderCurrLoc)
     .catch((err) => {
       console.log('err!!!', err)
     })
 }
-function onPanTo(lat, lng) {
-  console.log('lat', parseFloat(lat), parseFloat(lng))
 
+function onPanTo(lat, lng) {
   mapService.panTo(parseFloat(lat), parseFloat(lng))
 }
 
-function onDeleteLoc({ id }) {
-  console.log('id', id)
-  // locService.deleteLoc(id)
+function onDeleteLoc(id) {
+  locService
+    .deleteLoc(id)
+    .then(renderTable)
+    .then(() => mapService.removeMarker(id))
+}
+
+function onGoToLoc() {
+  var locName = document.querySelector('header input').value
+  mapService.geocode({ address: locName }, renderCurrLoc)
 }

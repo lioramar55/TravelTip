@@ -1,6 +1,7 @@
 export const locService = {
   getLocs,
   saveLoc,
+  deleteLoc,
 }
 
 const locKey = 'locations'
@@ -19,5 +20,18 @@ function getLocs() {
 
 function saveLoc(loc) {
   locs.push(loc)
+  _saveToStorage()
+}
+
+function deleteLoc(id) {
+  var currLocIdx = locs.findIndex((loc) => {
+    loc.id === id
+  })
+  locs.splice(currLocIdx, 1)
+  _saveToStorage()
+  return Promise.resolve()
+}
+
+function _saveToStorage() {
   saveToStorage(locKey, locs)
 }
