@@ -50,7 +50,7 @@ function getCurrLocation() {
 }
 
 function getNameFromCoords({ lat, lng }) {
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=AIzaSyDQZpmcKBeBErXtuej4ntQ7PKcNPRsBeiY`
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&sensor=true&key=`
   return axios(url)
     .then((res) => res.data)
     .then(_prepareData)
@@ -96,7 +96,7 @@ function panTo(lat, lng) {
 
 function _connectGoogleApi() {
   if (window.google) return Promise.resolve()
-  const API_KEY = 'AIzaSyDQZpmcKBeBErXtuej4ntQ7PKcNPRsBeiY'
+  const API_KEY = ''
   var elGoogleApi = document.createElement('script')
   elGoogleApi.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}`
   elGoogleApi.async = true
